@@ -71,17 +71,23 @@ namespace UI
                     }
                 }
 
+                List<ProcVolumeInfo> toRemove = new List<ProcVolumeInfo>();
                 foreach (var kvp in processLookup)
                 {
                     if (!existing.Contains(kvp.Key))
                     {
-                        processLookup.Remove(kvp.Key);
-                        processes.Remove(kvp.Value);
+                        toRemove.Add(kvp.Value);
                     }
                     else
                     {
                         kvp.Value.Refresh();
                     }
+                }
+
+                foreach(var pvi in toRemove)
+                {
+                    processLookup.Remove(pvi.Process.Id);
+                    processes.Remove(pvi);
                 }
 
                 if (lvApplications.SelectedIndex == -1)
