@@ -4,8 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="QuickVolumeBar - Controller" Height="450" MinWidth="800" MaxWidth="800"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" SizeToContent="Height" Margin="0" Padding="0">
+        Title="QuickVolumeBar - Controller"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" SizeToContent="WidthAndHeight" Margin="0" Padding="0">
     <Window.Resources>
         <Style x:Key="purpStylee">
             <Style.Resources>
@@ -15,33 +15,34 @@
         </Style>
     </Window.Resources>
     <Grid Style="{StaticResource purpStylee}" Background="Black">
-        <ListView x:Name="lvApplications" Background="Black" SnapsToDevicePixels="True" MaxWidth="800" KeyDown="appsKeyDown" Margin="0" Padding="0" BorderThickness="0">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid HorizontalAlignment="Stretch">
-                        <ProgressBar Foreground="DarkOrchid" Opacity="0.5" Background="Transparent" BorderThickness="0" Value="{Binding Volume}" ></ProgressBar>
-                        <DockPanel Margin="10">
-                            <Image Source="{Binding Icon}" Width="42" Height="42" DockPanel.Dock="Left" Margin="2"/>
-                            <WrapPanel DockPanel.Dock="Left" Margin="2" Orientation="Vertical">
-                                <WrapPanel DockPanel.Dock="Left" Margin="2" Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Process.ProcessName}" VerticalAlignment="Center" Foreground="White" Margin="10,0" FontSize="20"/>
-                                    <TextBlock Text="{Binding Process.MainWindowTitle}" MaxWidth="500" VerticalAlignment="Center" Foreground="White" Margin="10,7" FontSize="16"/>
+        <Border BorderThickness="10">
+            <ListView x:Name="lvApplications" Background="Black" SnapsToDevicePixels="True" MinWidth="800" KeyDown="appsKeyDown" Margin="0" Padding="0" BorderThickness="0">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid HorizontalAlignment="Stretch">
+                            <ProgressBar Foreground="DarkOrchid" Opacity="0.5" Background="Transparent" BorderThickness="0" Value="{Binding Volume}" ></ProgressBar>
+                            <DockPanel Margin="10">
+                                <Image Source="{Binding Icon}" Width="42" Height="42" DockPanel.Dock="Left" Margin="2"/>
+                                <WrapPanel DockPanel.Dock="Left" Margin="2" Orientation="Vertical">
+                                    <WrapPanel DockPanel.Dock="Left" Margin="2" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="White" Margin="10,0" FontSize="20"/>
+                                        <TextBlock Text="{Binding Title}" MaxWidth="500" VerticalAlignment="Center" Foreground="White" Margin="10,7" FontSize="16"/>
+                                    </WrapPanel>
                                 </WrapPanel>
-                            </WrapPanel>
-                        </DockPanel>
-                        <TextBlock Text="{Binding Volume, StringFormat={}{0:0.}%}" Foreground="White" FontSize="32" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Right" Opacity="0.8"/>
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    <Setter Property="Padding" Value="0"/>
-                    <Setter Property="Margin" Value="0"/>
-                    <Setter Property="BorderThickness" Value="0"/>
-                </Style>
-            </ListView.ItemContainerStyle>
-        </ListView>
-      
+                            </DockPanel>
+                            <TextBlock Text="{Binding Volume, StringFormat={}{0:0.}%}" Foreground="White" FontSize="32" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Right" Opacity="0.8"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </Border>
     </Grid>
 </Window>

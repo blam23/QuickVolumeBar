@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Timers;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -79,16 +80,17 @@ namespace UI
                     }
                     else
                     {
-                        kvp.Value.ProcUpdated();
+                        kvp.Value.Refresh();
                     }
                 }
 
                 if (lvApplications.SelectedIndex == -1)
                 {
                     lvApplications.SelectedIndex = 0;
+                    lvApplications.Focusable = true;
                     lvApplications.Focus();
+                    Keyboard.Focus(lvApplications);
                 }
-                lvApplications.UpdateLayout();
             });
         }
 
@@ -98,37 +100,29 @@ namespace UI
             Loaded += OnLoaded;
             Closing += OnClosing;
             KeyUp += WindowKeyUp;
-            _refreshTimer = new Timer(1000);
+            _refreshTimer = new Timer(300);
+            _refreshTimer.Elapsed += RefreshTimer_Elapsed;
         }
 
         protected override void OnDeactivated(EventArgs e)
         {
             base.OnDeactivated(e);
+            _refreshTimer?.Stop();
             Hide();
         }
 
         public new void Show()
         {
             base.Show();
+            _refreshTimer?.Stop();
+            _refreshTimer?.Start();
+            RefreshList();
         }
 
         private void WindowKeyUp(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
-                //case Key.Up:
-                //    if (lvApplications.SelectedIndex > 0)
-                //        lvApplications.SelectedIndex -= 1;
-                //    else
-                //        lvApplications.SelectedItem = 0;
-                //    lvApplications.Focus();
-                //    e.Handled = true;
-                //    break;
-                //case Key.Down:
-                //    lvApplications.SelectedIndex += 1;
-                //    lvApplications.Focus();
-                //    e.Handled = true;
-                //    break;
                 case Key.Escape:
                 case Key.Enter:
                     Hide();
@@ -156,9 +150,9 @@ namespace UI
             processes = new ObservableSet<ProcVolumeInfo>();
             processLookup = new Dictionary<int, ProcVolumeInfo>();
             lvApplications.ItemsSource = processes;
-            _refreshTimer.Elapsed += RefreshTimer_Elapsed;
-            _refreshTimer.Start();
-            RefreshList();
+            //
+            //_refreshTimer.Start();
+            //RefreshList();
         }
 
         private static readonly float ADJUSTMENT_AMOUNT = 10f;

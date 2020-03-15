@@ -31,6 +31,9 @@ namespace UI
         public Process Process { get; set; }
         public ImageSource Icon { get; set; }
 
+        public string Title => Process.MainWindowTitle;
+        public string Name => Process.ProcessName;
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(PropertyChangedEventArgs args)
         {
@@ -51,9 +54,11 @@ namespace UI
             else Volume = vol + amount;
         }
 
-        internal void ProcUpdated()
+        public void Refresh()
         {
-            OnPropertyChanged(new PropertyChangedEventArgs("Process"));
+            Process.Refresh();
+            OnPropertyChanged(new PropertyChangedEventArgs("Name"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Title"));
         }
     }
 }
