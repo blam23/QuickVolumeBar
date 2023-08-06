@@ -11,7 +11,21 @@ namespace LibW
         {
             foreach(var pid in WinMM.GetProcessesWithAudioSessions())
             {
-                yield return Process.GetProcessById((int)pid);
+                Process proc = null;
+
+                try
+                {
+                    proc = Process.GetProcessById((int)pid);
+                }
+                catch
+                {
+                    Logging.WriteLine($"Unable to get process handle for pid {pid}.");
+                }
+
+                if (proc is null)
+                    continue;
+
+                yield return proc;
             }
         }
 
