@@ -137,6 +137,7 @@ namespace UI
 
         public void Dispose()
         {
+            _runningMutex.Dispose();
             _hotKeyBus?.Dispose();
             TrayIcon?.Dispose();
         }

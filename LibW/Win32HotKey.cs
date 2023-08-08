@@ -25,7 +25,7 @@ namespace LibW
 
         private static uint WPFKeyToUint(Key key)
         {
-            return (uint)System.Windows.Input.KeyInterop.VirtualKeyFromKey(key);
+            return (uint)KeyInterop.VirtualKeyFromKey(key);
         }
 
         public Win32HotKey(Win32HotKeyController.Modifiers modifiers, Key wpfKey, Action func)

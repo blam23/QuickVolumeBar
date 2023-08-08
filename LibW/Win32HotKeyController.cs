@@ -5,7 +5,6 @@ using System.Threading;
 
 namespace LibW
 {
-    /// <inheritdoc />
     /// <summary>
     /// Used to keep register, keep track and un-register global hot-keys.
     /// Requires a WndProcBus to register for WmHotKey events.

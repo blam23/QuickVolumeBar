@@ -1,5 +1,4 @@
 ﻿using LibW;
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Media;

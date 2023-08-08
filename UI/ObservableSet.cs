@@ -29,7 +29,7 @@ namespace UI
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, item));
         }
 
-        private void _add(T item)
+        private void AddImpl(T item)
         {
             var index = IndexOf(item);
             if (index >= 0) return;
@@ -44,15 +44,15 @@ namespace UI
         {
             if (_syncContext != null)
             {
-                _syncContext.Send(x => _add(item), this);
+                _syncContext.Send(x => AddImpl(item), this);
             }
             else
             {
-                _add(item);
+                AddImpl(item);
             }
         }
 
-        private void _remove(T item)
+        private void RemoveImpl(T item)
         {
             var index = IndexOf(item);
             if (index < 0) return;
@@ -70,15 +70,15 @@ namespace UI
         {
             if (_syncContext != null)
             {
-                _syncContext.Send(x => _remove(item), this);
+                _syncContext.Send(x => RemoveImpl(item), this);
             }
             else
             {
-                _remove(item);
+                RemoveImpl(item);
             }
         }
 
-        private void _clear()
+        private void ClearImpl()
         {
             if (Count == 0)
                 return;
@@ -93,11 +93,11 @@ namespace UI
         {
             if (_syncContext != null)
             {
-                _syncContext.Send(x => _clear(), this);
+                _syncContext.Send(x => ClearImpl(), this);
             }
             else
             {
-                _clear();
+                ClearImpl();
             }
         }
     }
