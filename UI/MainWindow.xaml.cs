@@ -1,6 +1,7 @@
 ﻿using LibW;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -15,12 +16,14 @@ namespace UI
     {
         private readonly Timer _refreshTimer;
 
+        static ImageSource _volumeIcon = GetIcon(Assembly.GetEntryAssembly().Location);
+
         private void RefreshTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             RefreshList();
         }
 
-        ImageSource GetIcon(string path)
+        static ImageSource GetIcon(string path)
         {
             var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
 
@@ -83,7 +86,7 @@ namespace UI
                     }
                 }
 
-                foreach(var pvi in toRemove)
+                foreach (var pvi in toRemove)
                 {
                     processLookup.Remove(pvi.Process.Id);
                     processes.Remove(pvi);
@@ -155,14 +158,19 @@ namespace UI
             processes = new ObservableSet<ProcVolumeInfo>();
             processLookup = new Dictionary<int, ProcVolumeInfo>();
             lvApplications.ItemsSource = processes;
-            //
-            //_refreshTimer.Start();
-            //RefreshList();
+
+            var globalVolume = new ProcVolumeInfo
+            {
+                Process = null,
+                Icon = _volumeIcon
+            };
+            processes.Add(globalVolume);
         }
 
         private static readonly float ADJUSTMENT_AMOUNT = 10f;
+        private static readonly float SMALL_ADJUSTMENT_AMOUNT = 2f;
 
-        private void appsKeyDown(object sender, KeyEventArgs e)
+        private void AppsKeyDown(object sender, KeyEventArgs e)
         {
             if (!(lvApplications.SelectedItem is ProcVolumeInfo currentProc))
                 return;
@@ -170,14 +178,20 @@ namespace UI
             switch (e.Key)
             {
                 case Key.Left:
-                    currentProc.LowerVolume(ADJUSTMENT_AMOUNT);
-                    e.Handled = true;
-                    break;
+                    {
+                        var amount = Keyboard.IsKeyDown(Key.LeftShift) ? SMALL_ADJUSTMENT_AMOUNT : ADJUSTMENT_AMOUNT;
+                        currentProc.LowerVolume(amount);
+                        e.Handled = true;
+                        break;
+                    }
                 case Key.Right:
-                    currentProc.RaiseVolume(ADJUSTMENT_AMOUNT);
-                    lvApplications.UpdateLayout();
-                    e.Handled = true;
-                    break;
+                    {
+                        var amount = Keyboard.IsKeyDown(Key.LeftShift) ? SMALL_ADJUSTMENT_AMOUNT : ADJUSTMENT_AMOUNT;
+                        currentProc.RaiseVolume(amount);
+                        lvApplications.UpdateLayout();
+                        e.Handled = true;
+                        break;
+                    }
                 case Key.Escape:
                 case Key.Enter:
                     Hide();

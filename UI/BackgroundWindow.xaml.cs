@@ -75,12 +75,12 @@ namespace UI
             _hotKeyBus = new Win32HotKeyController();
             _hotKeyBus.RegisterForEvents(_bus);
 
-            Logging.WriteLine("Registering Global Audio Controller Hotkey (Ctrl+Win+G)");
+            Logging.WriteLine("Registering Global Audio Controller Hotkey (Shift+Win+G)");
             var registered = _hotKeyBus.Register(new Win32HotKey(
-                Win32HotKeyController.Modifiers.WinKey | Win32HotKeyController.Modifiers.Ctrl,
+                Win32HotKeyController.Modifiers.WinKey | Win32HotKeyController.Modifiers.Shift,
                 Key.G,
                 ShowController
-            )) ;
+            ));
             Logging.WriteLine($"Registered Sync HotKey, success=[{registered}]");
 
             StartupToggle.IsChecked = File.Exists(Shortcut);

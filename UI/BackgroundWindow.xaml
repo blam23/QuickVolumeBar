@@ -15,6 +15,7 @@
         <tb:TaskbarIcon.ContextMenu>
             <ContextMenu>
                 <MenuItem x:Name="StartupToggle" Header="Run on Startup" IsCheckable="True" Click="Startup_Click"/>
+                <MenuItem Header="Hotkey is Win+Shift+G" IsEnabled="False"/>
                 <MenuItem Header="Exit" Click="Exit_Click"/>
             </ContextMenu>
         </tb:TaskbarIcon.ContextMenu>

@@ -30,8 +30,8 @@ namespace UI
         public Process Process { get; set; }
         public ImageSource Icon { get; set; }
 
-        public string Title => Process.MainWindowTitle;
-        public string Name => Process.ProcessName;
+        public string Title => Process is null ? "Global Volume" : Process.MainWindowTitle;
+        public string Name => Process is null ? "volume" : Process.ProcessName;
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(PropertyChangedEventArgs args)

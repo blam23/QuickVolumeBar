@@ -33,7 +33,7 @@ namespace LibW
                 return;
 
             Guid guid = Guid.Empty;
-            volume.SetMasterVolume(level / 100, ref guid);
+            volume.SetMasterVolume(level / 100f, ref guid);
         }
 
         public static void SetApplicationMute(uint pid, bool mute)
@@ -48,16 +48,13 @@ namespace LibW
 
         public static IEnumerable<uint> GetProcessesWithAudioSessions()
         {
-            // get the speakers (1st render + multimedia) device
             IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
             deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
-            // activate the session manager. we need the enumerator
             Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
             speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object o);
             IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
 
-            // enumerate sessions for on this device
             mgr.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
             sessionEnumerator.GetCount(out int count);
 
@@ -75,22 +72,50 @@ namespace LibW
             Marshal.ReleaseComObject(deviceEnumerator);
         }
 
-        private static ISimpleAudioVolume GetVolumeObject(uint pid)
+        public static float GetMasterVolumeLevel()
         {
-            // get the speakers (1st render + multimedia) device
             IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
             deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
-            // activate the session manager. we need the enumerator
+            Guid IID_IAudioEndpointVolume = typeof(IAudioEndpointVolume).GUID;
+            speakers.Activate(ref IID_IAudioEndpointVolume, 0, IntPtr.Zero, out object o);
+            IAudioEndpointVolume mgr = (IAudioEndpointVolume)o;
+
+            mgr.GetMasterVolumeLevelScalar(out var volume);
+
+            Marshal.ReleaseComObject(speakers);
+            Marshal.ReleaseComObject(deviceEnumerator);
+
+            return volume * 100f;
+        }
+
+        public static void SetMasterVolumeLevel(float volume)
+        {
+            IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
+            deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
+
+            Guid IID_IAudioEndpointVolume = typeof(IAudioEndpointVolume).GUID;
+            speakers.Activate(ref IID_IAudioEndpointVolume, 0, IntPtr.Zero, out object o);
+            IAudioEndpointVolume mgr = (IAudioEndpointVolume)o;
+
+            mgr.SetMasterVolumeLevelScalar(volume / 100f, Guid.Empty);
+
+            Marshal.ReleaseComObject(speakers);
+            Marshal.ReleaseComObject(deviceEnumerator);
+        }
+
+        private static ISimpleAudioVolume GetVolumeObject(uint pid)
+        {
+            IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
+            deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
+
             Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
             speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object o);
             IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
 
-            // enumerate sessions for on this device
             mgr.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
             sessionEnumerator.GetCount(out int count);
 
-            // search for an audio session with the required name
             ISimpleAudioVolume volumeControl = null;
             for (int i = 0; i < count; i++)
             {
@@ -141,8 +166,6 @@ namespace LibW
 
         [PreserveSig]
         int GetDefaultAudioEndpoint(EDataFlow dataFlow, ERole role, out IMMDevice ppDevice);
-
-        // the rest is not implemented
     }
 
     [Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -150,8 +173,6 @@ namespace LibW
     {
         [PreserveSig]
         int Activate(ref Guid iid, int dwClsCtx, IntPtr pActivationParams, [MarshalAs(UnmanagedType.IUnknown)] out object ppInterface);
-
-        // the rest is not implemented
     }
 
     [Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -162,8 +183,75 @@ namespace LibW
 
         [PreserveSig]
         int GetSessionEnumerator(out IAudioSessionEnumerator SessionEnum);
+    }
 
-        // the rest is not implemented
+    [Guid("5CDF2C82-841E-4546-9722-0CF74078229A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IAudioEndpointVolume
+    {
+        [PreserveSig]
+        int NotImpl1();
+
+        [PreserveSig]
+        int NotImpl2();
+
+        [PreserveSig]
+        int GetChannelCount(
+            [Out][MarshalAs(UnmanagedType.U4)] out UInt32 channelCount);
+
+        [PreserveSig]
+        int SetMasterVolumeLevel(
+            [In][MarshalAs(UnmanagedType.R4)] float level,
+            [In][MarshalAs(UnmanagedType.LPStruct)] Guid eventContext);
+
+        [PreserveSig]
+        int SetMasterVolumeLevelScalar(
+            [In][MarshalAs(UnmanagedType.R4)] float level,
+            [In][MarshalAs(UnmanagedType.LPStruct)] Guid eventContext);
+
+        [PreserveSig]
+        int GetMasterVolumeLevel(
+            [Out][MarshalAs(UnmanagedType.R4)] out float level);
+
+        [PreserveSig]
+        int GetMasterVolumeLevelScalar(
+            [Out][MarshalAs(UnmanagedType.R4)] out float level);
+
+        [PreserveSig]
+        int SetChannelVolumeLevel(
+            [In][MarshalAs(UnmanagedType.U4)] UInt32 channelNumber,
+            [In][MarshalAs(UnmanagedType.R4)] float level,
+            [In][MarshalAs(UnmanagedType.LPStruct)] Guid eventContext);
+
+        [PreserveSig]
+        int SetChannelVolumeLevelScalar(
+            [In][MarshalAs(UnmanagedType.U4)] UInt32 channelNumber,
+            [In][MarshalAs(UnmanagedType.R4)] float level,
+            [In][MarshalAs(UnmanagedType.LPStruct)] Guid eventContext);
+
+        [PreserveSig]
+        int GetChannelVolumeLevel(
+            [In][MarshalAs(UnmanagedType.U4)] UInt32 channelNumber,
+            [Out][MarshalAs(UnmanagedType.R4)] out float level);
+
+        [PreserveSig]
+        int GetChannelVolumeLevelScalar(
+            [In][MarshalAs(UnmanagedType.U4)] UInt32 channelNumber,
+            [Out][MarshalAs(UnmanagedType.R4)] out float level);
+
+        [PreserveSig]
+        int SetMute(
+            [In][MarshalAs(UnmanagedType.Bool)] Boolean isMuted,
+            [In][MarshalAs(UnmanagedType.LPStruct)] Guid eventContext);
+
+        [PreserveSig]
+        int GetMute(
+            [Out][MarshalAs(UnmanagedType.Bool)] out Boolean isMuted);
+
+        [PreserveSig]
+        int GetVolumeStepInfo(
+            [Out][MarshalAs(UnmanagedType.U4)] out UInt32 step,
+            [Out][MarshalAs(UnmanagedType.U4)] out UInt32 stepCount);
+
     }
 
     [Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -183,8 +271,6 @@ namespace LibW
 
         [PreserveSig]
         int GetDisplayName([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
-
-        // the rest is not implemented
     }
 
     public enum AudioSessionState
@@ -273,4 +359,5 @@ namespace LibW
         [PreserveSig]
         int GetMute(out bool pbMute);
     }
+
 }

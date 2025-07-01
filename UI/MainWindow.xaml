@@ -16,7 +16,7 @@
     </Window.Resources>
     <Grid Style="{StaticResource purpStylee}" Background="Black">
         <Border BorderThickness="10">
-            <ListView x:Name="lvApplications" Background="Black" SnapsToDevicePixels="True" MinWidth="800" KeyDown="appsKeyDown" Margin="0" Padding="0" BorderThickness="0">
+            <ListView x:Name="lvApplications" Background="Black" SnapsToDevicePixels="True" MinWidth="800" KeyDown="AppsKeyDown" Margin="0" Padding="0" BorderThickness="0">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid HorizontalAlignment="Stretch">
