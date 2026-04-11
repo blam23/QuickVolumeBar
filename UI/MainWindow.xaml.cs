@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Timers;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -15,8 +16,9 @@ namespace UI
     public partial class MainWindow : Window
     {
         private readonly Timer _refreshTimer;
-
         static ImageSource _volumeIcon = GetIcon(Assembly.GetEntryAssembly().Location);
+        Dictionary<int, ProcVolumeInfo> _processLookup;
+        ObservableSet<ProcVolumeInfo> _processes;
 
         private void RefreshTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -33,9 +35,6 @@ namespace UI
                                 System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions()); ;
         }
 
-        Dictionary<int, ProcVolumeInfo> processLookup;
-        ObservableSet<ProcVolumeInfo> processes;
-
         private void RefreshList()
         {
             var procs = WinAudioController.GetProcessesToMonitor();
@@ -50,7 +49,7 @@ namespace UI
                         continue;
 
                     existing.Add(proc.Id);
-                    if (!processLookup.ContainsKey(proc.Id))
+                    if (!_processLookup.ContainsKey(proc.Id))
                     {
                         var icon = Icon;
                         try
@@ -68,13 +67,13 @@ namespace UI
                             Icon = icon
                         };
 
-                        processes.Add(pvi);
-                        processLookup.Add(proc.Id, pvi);
+                        _processes.Add(pvi);
+                        _processLookup.Add(proc.Id, pvi);
                     }
                 }
 
                 List<ProcVolumeInfo> toRemove = new List<ProcVolumeInfo>();
-                foreach (var kvp in processLookup)
+                foreach (var kvp in _processLookup)
                 {
                     if (!existing.Contains(kvp.Key))
                     {
@@ -88,8 +87,8 @@ namespace UI
 
                 foreach (var pvi in toRemove)
                 {
-                    processLookup.Remove(pvi.Process.Id);
-                    processes.Remove(pvi);
+                    _processLookup.Remove(pvi.Process.Id);
+                    _processes.Remove(pvi);
                 }
 
                 if (lvApplications.SelectedIndex == -1)
@@ -155,16 +154,16 @@ namespace UI
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            processes = new ObservableSet<ProcVolumeInfo>();
-            processLookup = new Dictionary<int, ProcVolumeInfo>();
-            lvApplications.ItemsSource = processes;
+            _processes = new ObservableSet<ProcVolumeInfo>();
+            _processLookup = new Dictionary<int, ProcVolumeInfo>();
+            lvApplications.ItemsSource = _processes;
 
             var globalVolume = new ProcVolumeInfo
             {
                 Process = null,
                 Icon = _volumeIcon
             };
-            processes.Add(globalVolume);
+            _processes.Add(globalVolume);
         }
 
         private static readonly float ADJUSTMENT_AMOUNT = 10f;
@@ -175,18 +174,20 @@ namespace UI
             if (!(lvApplications.SelectedItem is ProcVolumeInfo currentProc))
                 return;
 
+            bool shiftDown = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+
             switch (e.Key)
             {
                 case Key.Left:
                     {
-                        var amount = Keyboard.IsKeyDown(Key.LeftShift) ? SMALL_ADJUSTMENT_AMOUNT : ADJUSTMENT_AMOUNT;
+                        var amount = shiftDown ? SMALL_ADJUSTMENT_AMOUNT : ADJUSTMENT_AMOUNT;
                         currentProc.LowerVolume(amount);
                         e.Handled = true;
                         break;
                     }
                 case Key.Right:
                     {
-                        var amount = Keyboard.IsKeyDown(Key.LeftShift) ? SMALL_ADJUSTMENT_AMOUNT : ADJUSTMENT_AMOUNT;
+                        var amount = shiftDown ? SMALL_ADJUSTMENT_AMOUNT : ADJUSTMENT_AMOUNT;
                         currentProc.RaiseVolume(amount);
                         lvApplications.UpdateLayout();
                         e.Handled = true;
