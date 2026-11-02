@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="QuickVolumeBar - Controller"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" SizeToContent="WidthAndHeight" Margin="0" Padding="0">
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" SizeToContent="WidthAndHeight" Margin="0" Padding="0"
+        Background="#F2181420" SourceInitialized="OnSourceInitialized">
     <Window.Resources>
         <Style x:Key="purpStylee">
             <Style.Resources>
@@ -14,9 +15,8 @@
             </Style.Resources>
         </Style>
     </Window.Resources>
-    <Grid Style="{StaticResource purpStylee}" Background="Black">
-        <Border BorderThickness="10">
-            <ListView x:Name="lvApplications" Background="Black" SnapsToDevicePixels="True" MinWidth="800" KeyDown="AppsKeyDown" Margin="0" Padding="0" BorderThickness="0">
+    <Grid x:Name="RootGrid" Style="{StaticResource purpStylee}" Background="#F2181420">
+        <ListView x:Name="lvApplications" Background="Transparent" SnapsToDevicePixels="True" MinWidth="800" KeyDown="AppsKeyDown" Margin="0" Padding="0" BorderThickness="0">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid HorizontalAlignment="Stretch">
@@ -42,7 +42,6 @@
                         <Setter Property="BorderThickness" Value="0"/>
                     </Style>
                 </ListView.ItemContainerStyle>
-            </ListView>
-        </Border>
+        </ListView>
     </Grid>
 </Window>

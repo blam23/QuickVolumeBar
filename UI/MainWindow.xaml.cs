@@ -2,11 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Interop;
 
 namespace UI
 {
@@ -15,6 +17,49 @@ namespace UI
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const int WcaAccentPolicy = 19;
+        private const int AccentEnableAcrylicBlurBehind = 4;
+        private const int AcrylicTintColor = unchecked((int)0xA0302033);
+        private const int DwmwaSystemBackdropType = 38;
+        private const int DwmSystemBackdropTransientWindow = 3;
+        private const int DwmwaWindowCornerPreference = 33;
+        private const int DwmWindowCornerRound = 2;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct AccentPolicy
+        {
+            public int AccentState;
+            public int AccentFlags;
+            public int GradientColor;
+            public int AnimationId;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct WindowCompositionAttributeData
+        {
+            public int Attribute;
+            public IntPtr Data;
+            public int SizeOfData;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct Margins
+        {
+            public int Left;
+            public int Right;
+            public int Top;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref Margins margins);
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int valueSize);
+
         private readonly Timer _refreshTimer;
         static ImageSource _volumeIcon = GetIcon(Assembly.GetEntryAssembly().Location);
         Dictionary<int, ProcVolumeInfo> _processLookup;
@@ -109,6 +154,77 @@ namespace UI
             KeyUp += WindowKeyUp;
             _refreshTimer = new Timer(300);
             _refreshTimer.Elapsed += RefreshTimer_Elapsed;
+        }
+
+        private void OnSourceInitialized(object sender, EventArgs e)
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            var source = HwndSource.FromHwnd(hwnd);
+            var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+            var accent = new AccentPolicy
+            {
+                AccentState = AccentEnableAcrylicBlurBehind,
+                AccentFlags = 2,
+                GradientColor = AcrylicTintColor
+            };
+            var accentSize = Marshal.SizeOf(typeof(AccentPolicy));
+            var accentPointer = Marshal.AllocHGlobal(accentSize);
+
+            try
+            {
+                if (source != null)
+                    source.CompositionTarget.BackgroundColor = Colors.Transparent;
+
+                DwmExtendFrameIntoClientArea(hwnd, ref margins);
+
+                var cornerPreference = DwmWindowCornerRound;
+                DwmSetWindowAttribute(hwnd, DwmwaWindowCornerPreference, ref cornerPreference, sizeof(int));
+
+                // Windows 11 22H2+ exposes Desktop Acrylic as a supported DWM backdrop.
+                var backdropType = DwmSystemBackdropTransientWindow;
+                if (DwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, ref backdropType, sizeof(int)) == 0)
+                {
+                    RootGrid.Background = new SolidColorBrush(Color.FromArgb(0x26, 0x3A, 0x16, 0x4A));
+                    Background = Brushes.Transparent;
+                    return;
+                }
+
+                // Older Windows builds can still provide Acrylic through the legacy accent policy.
+                Marshal.StructureToPtr(accent, accentPointer, false);
+                var data = new WindowCompositionAttributeData
+                {
+                    Attribute = WcaAccentPolicy,
+                    Data = accentPointer,
+                    SizeOfData = accentSize
+                };
+
+                if (SetWindowCompositionAttribute(hwnd, ref data))
+                {
+                    RootGrid.Background = Brushes.Transparent;
+                    Background = Brushes.Transparent;
+                }
+            }
+            catch (DllNotFoundException)
+            {
+                RestoreOpaqueBackground(source);
+            }
+            catch (EntryPointNotFoundException)
+            {
+                RestoreOpaqueBackground(source);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(accentPointer);
+            }
+        }
+
+        private void RestoreOpaqueBackground(HwndSource source)
+        {
+            if (source != null)
+                source.CompositionTarget.BackgroundColor = Color.FromRgb(24, 20, 32);
+
+            RootGrid.Background = new SolidColorBrush(Color.FromRgb(24, 20, 32));
+            Background = RootGrid.Background;
         }
 
         protected override void OnDeactivated(EventArgs e)
