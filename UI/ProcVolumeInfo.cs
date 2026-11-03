@@ -1,6 +1,8 @@
 ﻿using LibW;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows;
 using System.Windows.Media;
 
 namespace UI
@@ -8,6 +10,11 @@ namespace UI
     class ProcVolumeInfo : INotifyPropertyChanged
     {
         private float _oldVolume;
+        private float _peakLevel;
+        private string _discordNameTag = string.Empty;
+
+        public float PeakPercent => _peakLevel * 100f;
+        public Visibility AudioLevelVisibility => Process is null ? Visibility.Collapsed : Visibility.Visible;
         public float Volume
         {
             get
@@ -31,7 +38,20 @@ namespace UI
         public ImageSource Icon { get; set; }
 
         public string Title => Process is null ? "Global Volume" : Process.MainWindowTitle;
-        public string Name => Process is null ? "volume" : Process.ProcessName;
+        public string Name => Process is null
+            ? "volume"
+            : ProcessNicknames.GetDisplayName(Process.ProcessName)
+                + (string.IsNullOrEmpty(_discordNameTag) ? string.Empty : " (" + _discordNameTag + ")");
+
+        public void SetDiscordNameTag(string nameTag)
+        {
+            nameTag = nameTag ?? string.Empty;
+            if (_discordNameTag == nameTag)
+                return;
+
+            _discordNameTag = nameTag;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Name)));
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(PropertyChangedEventArgs args)
@@ -53,11 +73,18 @@ namespace UI
             else Volume = vol + amount;
         }
 
-        public void Refresh()
+        public void Refresh(float peakLevel = 0f)
         {
             Process.Refresh();
             OnPropertyChanged(new PropertyChangedEventArgs("Name"));
             OnPropertyChanged(new PropertyChangedEventArgs("Title"));
+
+            peakLevel = Math.Max(0f, Math.Min(1f, peakLevel));
+            if (Math.Abs(_peakLevel - peakLevel) > 0.001f)
+            {
+                _peakLevel = peakLevel;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PeakPercent)));
+            }
         }
     }
 }

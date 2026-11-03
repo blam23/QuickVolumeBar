@@ -22,6 +22,7 @@ namespace UI
         private Win32HotKeyController _hotKeyBus;
 
         private MainWindow _controllerWindow;
+        private DiscordDiagnosticsWindow _discordDiagnosticsWindow;
 
         private Mutex _runningMutex;
         private static readonly string UniqueName = "QuickVolumeBarWPFApp";
@@ -45,6 +46,23 @@ namespace UI
             _controllerWindow.Topmost = true;
         }
 
+        private void ShowDiscordDiagnostics()
+        {
+            if (_discordDiagnosticsWindow == null)
+            {
+                Logging.WriteLine("Opening always-on-top Discord audio diagnostics");
+                _discordDiagnosticsWindow = new DiscordDiagnosticsWindow();
+                _discordDiagnosticsWindow.Closed += (_, __) => _discordDiagnosticsWindow = null;
+            }
+
+            if (!_discordDiagnosticsWindow.IsVisible)
+                _discordDiagnosticsWindow.Show();
+
+            _discordDiagnosticsWindow.WindowState = WindowState.Normal;
+            _discordDiagnosticsWindow.Topmost = true;
+            _discordDiagnosticsWindow.Activate();
+        }
+
         private void OnLoad(object sender, RoutedEventArgs e)
         {
             // Make sure this is hidden.
@@ -66,6 +84,8 @@ namespace UI
             // Setup Controller Window
             Logging.WriteLine($"Setting up Controller Window");
             _controllerWindow = new MainWindow();
+
+            //ShowDiscordDiagnostics();
 
             Logging.WriteLine($"Setting up WndProcBus for {(GetType().Name)}");
             _bus = new WndProcBus();
@@ -133,6 +153,11 @@ namespace UI
                 else
                     RemoveFromStartup();
             }
+        }
+
+        private void Diagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            ShowDiscordDiagnostics();
         }
 
         public void Dispose()

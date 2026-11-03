@@ -21,6 +21,7 @@
                     <DataTemplate>
                         <Grid HorizontalAlignment="Stretch">
                             <ProgressBar Foreground="DarkOrchid" Opacity="0.5" Background="Transparent" BorderThickness="0" Value="{Binding Volume}" ></ProgressBar>
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding PeakPercent, Mode=OneWay}" Visibility="{Binding AudioLevelVisibility}" Foreground="#AA49C8AE" Opacity="0.65" Background="Transparent" BorderThickness="0" ToolTip="Current audio peak level; 100% is full scale" />
                             <DockPanel Margin="10">
                                 <Image Source="{Binding Icon}" Width="42" Height="42" DockPanel.Dock="Left" Margin="2"/>
                                 <WrapPanel DockPanel.Dock="Left" Margin="2" Orientation="Vertical">

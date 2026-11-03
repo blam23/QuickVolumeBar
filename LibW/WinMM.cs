@@ -6,6 +6,8 @@ namespace LibW
 {
     public class WinMM
     {
+        private const int ClsctxAll = 0x17;
+
         public static float? GetApplicationVolume(uint pid)
         {
             ISimpleAudioVolume volume = GetVolumeObject(pid);
@@ -52,7 +54,7 @@ namespace LibW
             deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
             Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
-            speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object o);
+            speakers.Activate(ref IID_IAudioSessionManager2, ClsctxAll, IntPtr.Zero, out object o);
             IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
 
             mgr.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
@@ -78,7 +80,7 @@ namespace LibW
             deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
             Guid IID_IAudioEndpointVolume = typeof(IAudioEndpointVolume).GUID;
-            speakers.Activate(ref IID_IAudioEndpointVolume, 0, IntPtr.Zero, out object o);
+            speakers.Activate(ref IID_IAudioEndpointVolume, ClsctxAll, IntPtr.Zero, out object o);
             IAudioEndpointVolume mgr = (IAudioEndpointVolume)o;
 
             mgr.GetMasterVolumeLevelScalar(out var volume);
@@ -95,7 +97,7 @@ namespace LibW
             deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
             Guid IID_IAudioEndpointVolume = typeof(IAudioEndpointVolume).GUID;
-            speakers.Activate(ref IID_IAudioEndpointVolume, 0, IntPtr.Zero, out object o);
+            speakers.Activate(ref IID_IAudioEndpointVolume, ClsctxAll, IntPtr.Zero, out object o);
             IAudioEndpointVolume mgr = (IAudioEndpointVolume)o;
 
             mgr.SetMasterVolumeLevelScalar(volume / 100f, Guid.Empty);
@@ -110,7 +112,7 @@ namespace LibW
             deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
             Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
-            speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object o);
+            speakers.Activate(ref IID_IAudioSessionManager2, ClsctxAll, IntPtr.Zero, out object o);
             IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
 
             mgr.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);

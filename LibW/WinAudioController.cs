@@ -45,5 +45,25 @@ namespace LibW
             else
                 WinMM.SetApplicationVolume((uint)proc.Id, value);
         }
+
+        public static Dictionary<int, float> GetApplicationPeakLevels()
+        {
+            var peakLevels = new Dictionary<int, float>();
+            try
+            {
+                foreach (var session in AudioSessionDiagnostics.GetActiveEndpointSessions(out _))
+                {
+                    int processId = (int)session.ProcessId;
+                    if (!peakLevels.TryGetValue(processId, out float currentPeak) || session.PeakLevel > currentPeak)
+                        peakLevels[processId] = session.PeakLevel;
+                }
+            }
+            catch
+            {
+                // Keep the volume list usable if Windows does not expose session peak meters.
+            }
+
+            return peakLevels;
+        }
     }
 }
