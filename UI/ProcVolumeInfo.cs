@@ -40,8 +40,9 @@ namespace UI
         public string Title => Process is null ? "Global Volume" : Process.MainWindowTitle;
         public string Name => Process is null
             ? "volume"
-            : ProcessNicknames.GetDisplayName(Process.ProcessName)
-                + (string.IsNullOrEmpty(_discordNameTag) ? string.Empty : " (" + _discordNameTag + ")");
+            : (ProcessNicknames.GetDisplayName(Process.ProcessName)
+                + (string.IsNullOrEmpty(_discordNameTag) ? string.Empty : " (" + _discordNameTag + ")"))
+                .ToLowerInvariant();
 
         public void SetDiscordNameTag(string nameTag)
         {
